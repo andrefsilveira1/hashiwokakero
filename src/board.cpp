@@ -84,6 +84,14 @@ const std::vector<std::pair<cell, cell>>& Board::edges() const {
     return edges_;
 }
 
+const std::vector<Island>& Board::islands() const {
+    return islands_;
+}
+
+const Island& Board::island(int id) const {
+    return islands_.at(static_cast<std::size_t>(id));
+}
+
 bool are_same_line(cell first, cell second) {
     return first.cd.x == second.cd.x;
 }
@@ -98,7 +106,16 @@ void Board::connect_cells(cell& first, cell& second) {
         return;
     }
 
+    const int first_id = island_ids_[first.cd.x][first.cd.y];
+    const int second_id = island_ids_[second.cd.x][second.cd.y];
+    for (const BuiltBridge& bridge : islands_.at(first_id).bridges) {
+        if (bridge.island_id == second_id && bridge.degree >= 2) return;
+    }
     edges_.push_back({first, second});
+
+    // I don't think this is really nice, but it works. 
+    add_built_bridge(first_id, second_id);
+    add_built_bridge(second_id, first_id);
     first.decrease_val();
     second.decrease_val();
 
@@ -140,6 +157,7 @@ void Board::connect_cells(cell& first, cell& second) {
             }
         }
     }
+    synchronize_island_adjacency();
 }
 
 void Board::initialize() {
@@ -185,6 +203,75 @@ void Board::initialize() {
             if (current.lft != nullptr) current.lft_value = std::min(current.lft->val, 2);
         }
     }
+    initialize_islands();
+}
+
+void Board::initialize_islands() {
+    island_ids_.assign(static_cast<std::size_t>(rows()),
+                       std::vector<int>(static_cast<std::size_t>(columns()), -1));
+    islands_.clear();
+    for (int row = 0; row < rows(); ++row) {
+        for (int column = 0; column < columns(); ++column) {
+            const cell& current = cells_[row][column];
+            if (!current.is_island()) continue;
+
+            const int id = static_cast<int>(islands_.size());
+            island_ids_[row][column] = id;
+            Island entry;
+            entry.id = id;
+            entry.required_bridges = current.init_val;
+            entry.x = row;
+            entry.y = column;
+            islands_.push_back(entry);
+        }
+    }
+    synchronize_island_adjacency();
+}
+
+void Board::synchronize_island_adjacency() {
+    for (Island& entry : islands_) {
+        const cell& source = cells_[entry.x][entry.y];
+        set_island_neighbor(entry.above, source.top);
+        set_island_neighbor(entry.below, source.bot);
+        set_island_neighbor(entry.right, source.rgt);
+        set_island_neighbor(entry.left, source.lft);
+    }
+}
+
+void Board::set_island_neighbor(IslandNeighbor& destination, cell* neighbor) {
+    // Começamos sem vizinho. Se a célula não aponta para uma ilha, fica id -1.
+    destination.id = -1;
+    destination.active = false;
+
+    if (neighbor == nullptr) {
+        return;
+    }
+
+    const int neighbor_id = island_ids_[neighbor->cd.x][neighbor->cd.y];
+    if (neighbor_id == -1) {
+        return;
+    }
+
+    destination.id = neighbor_id;
+    destination.active = neighbor->is_open_island();
+}
+
+void Board::add_built_bridge(int from_id, int to_id) {
+    Island& from = islands_[from_id];
+
+    for (std::size_t i = 0; i < from.bridges.size(); ++i) {
+        if (from.bridges[i].island_id == to_id) {
+            from.bridges[i].degree++;
+            from.current_degree++;
+            return;
+        }
+    }
+
+    BuiltBridge bridge;
+    bridge.island_id = to_id;
+    bridge.degree = 1;
+    from.bridges.push_back(bridge);
+    from.current_degree++;
 }
 
 } // namespace new_base
