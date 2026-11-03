@@ -1,5 +1,5 @@
 #include "board.hpp"
-
+#include <iostream>
 #include <algorithm>
 #include <stdexcept>
 
@@ -72,6 +72,10 @@ int Board::value_function() const {
     return max_edges() - count_edges();
 }
 
+bool Board::bool_value_function() const {
+    return max_edges() - count_edges() == 0;
+}
+
 cell& Board::at(int row, int column) {
     return cells_[row][column];
 }
@@ -82,6 +86,10 @@ const cell& Board::at(int row, int column) const {
 
 const std::vector<std::pair<cell, cell>>& Board::edges() const {
     return edges_;
+}
+
+const std::vector<Connection>& Board::connections() const {
+    return connections_;
 }
 
 const std::vector<Island>& Board::islands() const {
@@ -160,6 +168,68 @@ void Board::connect_cells(cell& first, cell& second) {
     synchronize_island_adjacency();
 }
 
+void Board::initialize_connections() {
+    connections_.clear();
+
+    for (const Island& entry : islands_) {
+        const cell& source = cells_[entry.x][entry.y];
+
+        if (source.rgt != nullptr) {
+            const int neighbor_id = island_ids_[source.rgt->cd.x][source.rgt->cd.y];
+            if (neighbor_id != -1) {
+                connections_.push_back({entry.id, neighbor_id});
+            }
+        }
+
+        if (source.bot != nullptr) {
+            const int neighbor_id = island_ids_[source.bot->cd.x][source.bot->cd.y];
+            if (neighbor_id != -1) {
+                connections_.push_back({entry.id, neighbor_id});
+            }
+        }
+    }
+}
+//  This function should check if two cells are in the same column and if there is an island between both
+bool Board::reach_column(const cell& first, const cell& second) const {
+    const int column = first.cd.y;
+    const int min_row = std::min(first.cd.x, second.cd.x);
+    const int max_row = std::max(first.cd.x, second.cd.x);
+
+    for (int row = min_row + 1; row < max_row; ++row) {
+        if (cells_[row][column].is_island()) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+bool Board::reach_row(const cell& first, const cell& second) const {
+    const int row = first.cd.x;
+    const int min_column = std::min(first.cd.y, second.cd.y);
+    const int max_column = std::max(first.cd.y, second.cd.y);
+
+    for (int column = min_column + 1; column < max_column; ++column) {
+        if (cells_[row][column].is_island()) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+void Board::print_connections() {
+    for (const Connection& connection : connections_) {
+        const cell& source = cells_[islands_[connection.first].x][islands_[connection.first].y];
+        const cell& neighbor = cells_[islands_[connection.second].x][islands_[connection.second].y];
+
+        if(are_same_collum(source, neighbor)) {
+            reach_column(cells_[islands_[connection.first].x][islands_[connection.first].y],
+                         cells_[islands_[connection.second].x][islands_[connection.second].y]);
+        }
+    }
+}
+
 void Board::initialize() {
     std::vector<cell*> last_island_in_row(rows(), nullptr);
     std::vector<cell*> last_island_in_column(columns(), nullptr);
@@ -225,6 +295,7 @@ void Board::initialize_islands() {
             islands_.push_back(entry);
         }
     }
+    initialize_connections();
     synchronize_island_adjacency();
 }
 
