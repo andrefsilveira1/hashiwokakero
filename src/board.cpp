@@ -52,7 +52,7 @@ int Board::max_edges() const {
             }
         }
     }
-    return max_edges;
+    return max_edges / 2 ;
 }
 
 int Board::count_edges() const {
@@ -104,12 +104,12 @@ bool are_same_line(cell first, cell second) {
     return first.cd.x == second.cd.x;
 }
 
-bool are_same_collum(cell first, cell second) {
+bool are_same_column(cell first, cell second) {
     return first.cd.y == second.cd.y;
 }
 
 void Board::connect_cells(cell& first, cell& second) {
-    if (!((are_same_line(first, second) || are_same_collum(first, second)) &&
+    if (!((are_same_line(first, second) || are_same_column(first, second)) &&
           first.check_adj(&second) && second.check_adj(&first))) {
         return;
     }
@@ -218,12 +218,13 @@ bool Board::reach_row(const cell& first, const cell& second) const {
     return true;
 }
 
+// i still need to finish this.
 void Board::print_connections() {
     for (const Connection& connection : connections_) {
         const cell& source = cells_[islands_[connection.first].x][islands_[connection.first].y];
         const cell& neighbor = cells_[islands_[connection.second].x][islands_[connection.second].y];
 
-        if(are_same_collum(source, neighbor)) {
+        if(are_same_column(source, neighbor)) {
             reach_column(cells_[islands_[connection.first].x][islands_[connection.first].y],
                          cells_[islands_[connection.second].x][islands_[connection.second].y]);
         }

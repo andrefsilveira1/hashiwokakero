@@ -71,6 +71,6 @@ private:
 };
 
 bool are_same_line(cell first, cell second);
-bool are_same_collum(cell first, cell second);
+bool are_same_column(cell first, cell second);
 
 } // namespace new_base

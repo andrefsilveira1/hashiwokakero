@@ -7,7 +7,7 @@ namespace new_base {
 coord::coord() : x(-1), y(-1) {}
 coord::coord(int m_x, int m_y) : x(m_x), y(m_y) {}
 
-cell::cell() : init_val(0), val(0), line(NO_LINE) {}
+cell::cell(int v) : init_val(v), val(v), line(NO_LINE) {}
 cell::cell(int v) : val(v) {}
 
 bool cell::is_island() const {
