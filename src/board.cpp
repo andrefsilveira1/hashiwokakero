@@ -3,7 +3,7 @@
 #include <algorithm>
 #include <stdexcept>
 
-namespace new_base {
+namespace hashi {
 
 Board::Board(const std::vector<std::vector<int>>& values) {
     if (values.empty() || values.front().empty()) {
@@ -346,4 +346,4 @@ void Board::add_built_bridge(int from_id, int to_id) {
     from.current_degree++;
 }
 
-} // namespace new_base
+} // namespace hashi

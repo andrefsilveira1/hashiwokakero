@@ -5,7 +5,7 @@
 #include <vector>
 
 int main() {
-    using namespace new_base;
+    using namespace hashi;
 
     const std::vector<std::vector<int>> puzzle = {
         {1, 0, 1}

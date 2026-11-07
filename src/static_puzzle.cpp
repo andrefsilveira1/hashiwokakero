@@ -1,62 +1,71 @@
 #include "static_puzzle.hpp"
 
-namespace new_base {
+#include <algorithm>
+
+namespace hashi {
+    namespace {
+        bool edges_cross(const Edge& first, const Edge& second,
+                         const std::vector<Island>& islands) {
+            // A crossing requires one horizontal and one vertical edge, with
+            // the intersection strictly inside both edges (not at an island).
+            const Edge& horizontal = first.is_vertical ? second : first;
+            const Edge& vertical = first.is_vertical ? first : second;
+            if (horizontal.is_vertical == vertical.is_vertical) {
+                return false;
+            }
+
+            const Island& horizontal_a = islands[horizontal.island_a];
+            const Island& horizontal_b = islands[horizontal.island_b];
+            const Island& vertical_a = islands[vertical.island_a];
+            const Island& vertical_b = islands[vertical.island_b];
+
+            const int horizontal_row = horizontal_a.x;
+            const int vertical_column = vertical_a.y;
+            const int min_column = std::min(horizontal_a.y, horizontal_b.y);
+            const int max_column = std::max(horizontal_a.y, horizontal_b.y);
+            const int min_row = std::min(vertical_a.x, vertical_b.x);
+            const int max_row = std::max(vertical_a.x, vertical_b.x);
+
+            return min_column < vertical_column && vertical_column < max_column &&
+                   min_row < horizontal_row && horizontal_row < max_row;
+        }
+    }
+
     Puzzle generate_puzzle(const Board& board) {
         Puzzle puzzle;
         puzzle.islands = board.islands();
-        const auto& connections = board.connections();
-        for (const auto& connection : connections) {
+        puzzle.incident_edges.resize(puzzle.islands.size());
+
+        // Create one candidate edge for every connection in the board.
+        for (const auto& connection : board.connections()) {
+            const Island& island_a = puzzle.islands[connection.first];
+            const Island& island_b = puzzle.islands[connection.second];
+
             Edge edge;
             edge.id = static_cast<int>(puzzle.edges.size());
             edge.island_a = connection.first;
             edge.island_b = connection.second;
-            const Island& island_a = puzzle.islands[connection.first];
-            const Island& island_b = puzzle.islands[connection.second];
-            edge.is_vertical = (island_a.x != island_b.x);
+            // Board coordinates use x for row and y for column.
+            edge.is_vertical = island_a.y == island_b.y;
             puzzle.edges.push_back(edge);
         }
 
-        for (const auto& puzzle_edge : puzzle.edges) {
-            const Island& island_a = puzzle.islands[puzzle_edge.island_a];
-            const Island& island_b = puzzle.islands[puzzle_edge.island_b];
-            int x1 = island_a.x;
-            int y1 = island_a.y;
-            int x2 = island_b.x;
-            int y2 = island_b.y;
-
-            if (puzzle_edge.is_vertical) {
-                for (int x = std::min(x1, x2) + 1; x < std::max(x1, x2); ++x) {
-                    puzzle.connections[x][y1].push_back(puzzle_edge.id);
-                }
-            } else {
-                for (int y = std::min(y1, y2) + 1; y < std::max(y1, y2); ++y) {
-                    puzzle.connections[x1][y].push_back(puzzle_edge.id);
-                }
-            }
+        // Record each edge at both of its endpoint islands.
+        for (const Edge& edge : puzzle.edges) {
+            puzzle.incident_edges[edge.island_a].push_back(edge.id);
+            puzzle.incident_edges[edge.island_b].push_back(edge.id);
         }
 
+        // Save each crossing pair once, using edge indices.
         for (size_t i = 0; i < puzzle.edges.size(); ++i) {
-            const Edge& edge1 = puzzle.edges[i];
-            const Island& island_a1 = puzzle.islands[edge1.island_a];
-            const Island& island_b1 = puzzle.islands[edge1.island_b];
-
             for (size_t j = i + 1; j < puzzle.edges.size(); ++j) {
-                const Edge& edge2 = puzzle.edges[j];
-                const Island& island_a2 = puzzle.islands[edge2.island_a];
-                const Island& island_b2 = puzzle.islands[edge2.island_b];
-
-                if ((island_a1.x < island_a2.x && island_b1.x > island_b2.x) ||
-                    (island_a1.x > island_a2.x && island_b1.x < island_b2.x)) {
-                    if ((island_a1.y < island_a2.y && island_b1.y > island_b2.y) ||
-                        (island_a1.y > island_a2.y && island_b1.y < island_b2.y)) {
-                        // The edges cross each other
-                        puzzle.crossing_edges[edge1.id][edge2.id].push_back(edge2.id);
-                        puzzle.crossing_edges[edge2.id][edge1.id].push_back(edge1.id);
-                    }
+                if (edges_cross(puzzle.edges[i], puzzle.edges[j], puzzle.islands)) {
+                    puzzle.crossing_pairs.emplace_back(
+                        puzzle.edges[i].id, puzzle.edges[j].id);
                 }
             }
         }
+
         return puzzle;
     }
-
 }

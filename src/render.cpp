@@ -5,7 +5,7 @@
 #include <string>
 #include <vector>
 
-namespace new_base {
+namespace hashi {
 
 void print_cell_info(cell c) {
     std::cout << "{ val: " << c.val << ", ";
@@ -50,4 +50,4 @@ void print_edg_list(const Board& board) {
     }
 }
 
-} // namespace new_base
+} // namespace hashi

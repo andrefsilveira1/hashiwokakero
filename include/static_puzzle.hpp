@@ -4,7 +4,7 @@
 #include <utility>
 #include <vector>
 
-namespace new_base {
+namespace hashi {
     struct Edge {
         int id;
         int island_a;
@@ -16,8 +16,8 @@ namespace new_base {
         std::vector<Island> islands;
         std::vector<Edge> edges;
 
-        std::vector<std::vector<std::vector<int>>> connections;
-        std::vector<std::vector<std::vector<int>>> crossing_edges;
+        std::vector<std::vector<int>> incident_edges;
+        std::vector<std::pair<int, int>> crossing_pairs;
     };
 
     Puzzle generate_puzzle(const Board& board);

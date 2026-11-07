@@ -2,7 +2,7 @@
 
 #include <algorithm>
 
-namespace new_base {
+namespace hashi {
 
 coord::coord() : x(-1), y(-1) {}
 coord::coord(int m_x, int m_y) : x(m_x), y(m_y) {}
@@ -93,4 +93,4 @@ bool is_adjacent(cell* c) {
     return c != nullptr && c->is_open_island();
 }
 
-} // namespace new_base
+} // namespace hashi

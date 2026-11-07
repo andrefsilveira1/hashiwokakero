@@ -3,7 +3,7 @@
 #include <string>
 #include <vector>
 
-namespace new_base {
+namespace hashi {
 
 constexpr int NO_LINE = 0;
 constexpr int HORIZONTAL = 1;
@@ -47,4 +47,4 @@ struct cell {
 
 bool is_adjacent(cell* c);
 
-} // namespace new_base
+} // namespace hashi
