@@ -3,11 +3,10 @@
 #include <algorithm>
 
 namespace hashi {
+    // Using anonymous namespace to limit this scope
+    // I'm wondering if this would be better as a static func. 
     namespace {
-        bool edges_cross(const Edge& first, const Edge& second,
-                         const std::vector<Island>& islands) {
-            // A crossing requires one horizontal and one vertical edge, with
-            // the intersection strictly inside both edges (not at an island).
+        bool edges_cross(const Edge& first, const Edge& second, const std::vector<Island>& islands) {
             const Edge& horizontal = first.is_vertical ? second : first;
             const Edge& vertical = first.is_vertical ? first : second;
             if (horizontal.is_vertical == vertical.is_vertical) {
@@ -36,7 +35,6 @@ namespace hashi {
         puzzle.islands = board.islands();
         puzzle.incident_edges.resize(puzzle.islands.size());
 
-        // Create one candidate edge for every connection in the board.
         for (const auto& connection : board.connections()) {
             const Island& island_a = puzzle.islands[connection.first];
             const Island& island_b = puzzle.islands[connection.second];
@@ -45,18 +43,16 @@ namespace hashi {
             edge.id = static_cast<int>(puzzle.edges.size());
             edge.island_a = connection.first;
             edge.island_b = connection.second;
-            // Board coordinates use x for row and y for column.
+
             edge.is_vertical = island_a.y == island_b.y;
             puzzle.edges.push_back(edge);
         }
 
-        // Record each edge at both of its endpoint islands.
         for (const Edge& edge : puzzle.edges) {
             puzzle.incident_edges[edge.island_a].push_back(edge.id);
             puzzle.incident_edges[edge.island_b].push_back(edge.id);
         }
 
-        // Save each crossing pair once, using edge indices.
         for (size_t i = 0; i < puzzle.edges.size(); ++i) {
             for (size_t j = i + 1; j < puzzle.edges.size(); ++j) {
                 if (edges_cross(puzzle.edges[i], puzzle.edges[j], puzzle.islands)) {

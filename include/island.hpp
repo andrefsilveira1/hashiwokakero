@@ -1,3 +1,6 @@
+#pragma once
+#include <vector>
+
 struct IslandNeighbor {
     int id = -1;
     bool active = false;
