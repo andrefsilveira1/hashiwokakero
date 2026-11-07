@@ -1,6 +1,10 @@
+#pragma once
 #include "evaluator.hpp"
+#include <vector>
+
+using Genome = std::vector<int>;
 
 struct Individual {
-    // Genoma TODO
-    QualityController quality;
+    Genome genes;
+    QualityEvaluator quality;
 };
