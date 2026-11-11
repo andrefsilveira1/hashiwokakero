@@ -1,19 +1,31 @@
 #include "board.hpp"
+#include "puzzle_io.hpp"
 #include "render.hpp"
 
+#include <exception>
 #include <iostream>
-#include <vector>
+#include <string>
 
-int main() {
+int main(int argc, char* argv[]) {
     using namespace hashi;
 
-    const std::vector<std::vector<int>> puzzle = {
-        {1, 0, 1}
-    };
+    // I've implemented the puzzle_io in order to make it easy to read the puzzle
+    // rather than using hard coded valus
+    if (argc != 2) {
+        std::cerr << "Usage: " << argv[0] << " <puzzle-file>\n";
+        return 1;
+    }
 
-    const Board board(puzzle);
+    try {
+        const auto values = read_puzzle_file(argv[1]);
+        const Board board(values);
 
-    std::cout << "Puzzle grid:\n";
-    print_board(board);
-    std::cout << "Islands found: " << board.island_count() << '\n';
+        std::cout << "Puzzle:\n";
+        print_board(board);
+        std::cout << "Islands found: " << board.island_count() << '\n';
+        return 0;
+    } catch (const std::exception& error) {
+        std::cerr << "Error reading the puzzle: " << error.what() << '\n';
+        return 1;
+    }
 }
