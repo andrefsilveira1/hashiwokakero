@@ -7,8 +7,10 @@ namespace hashi {
 coord::coord() : x(-1), y(-1) {}
 coord::coord(int m_x, int m_y) : x(m_x), y(m_y) {}
 
-cell::cell(int v) : init_val(v), val(v), line(NO_LINE) {}
-cell::cell(int v) : val(v) {}
+cell::cell() : lft(nullptr), rgt(nullptr), top(nullptr), bot(nullptr), init_val(0), val(0), line(NO_LINE) {}
+
+cell::cell(int v)
+    : lft(nullptr), rgt(nullptr), top(nullptr), bot(nullptr), init_val(v), val(v), line(NO_LINE) {}
 
 bool cell::is_island() const {
     return is_open_island() || is_closed_island();

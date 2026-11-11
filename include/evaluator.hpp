@@ -1,18 +1,21 @@
 #pragma once
-#include "board.hpp"
+#include "static_puzzle.hpp"
+#include <vector>
 
 namespace hashi {
-    class QualityEvaluator {
-    public:
+    struct Evaluation {
         int degree_error = 0;
-        int crossing_edges = 0;
-        int disconnected_islands = 0;
+        int crossing_pairs = 0;
+        int disconnected_components = 0;
         int penalty = 0;
         bool is_valid = false;
+    };
 
-        int calculate_degree_error(const Board& board) const;
-        int calculate_crossing_edges(const Board& board) const;
-        int calculate_disconnected_islands(const Board& board) const;
-        int calculate_penalty(const Board& board) const;
+    class QualityEvaluator {
+    public:
+        Evaluation evaluate(const Puzzle& puzzle, const std::vector<int>& genome) const;
+        int calculate_degree_error(const Puzzle& puzzle, const std::vector<int>& genome) const;
+        int calculate_crossing_edges(const Puzzle& puzzle, const std::vector<int>& genome) const;
+        int calculate_disconnected_components(const Puzzle& puzzle, const std::vector<int>& genome) const;
     };
 } // namespace hashi

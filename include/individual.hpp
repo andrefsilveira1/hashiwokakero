@@ -2,9 +2,13 @@
 #include "evaluator.hpp"
 #include <vector>
 
+namespace hashi {
+
 using Genome = std::vector<int>;
 
 struct Individual {
     Genome genes;
-    QualityEvaluator quality;
+    Evaluation evaluation;
 };
+
+} // namespace hashi
